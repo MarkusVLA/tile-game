@@ -1,82 +1,17 @@
 
 
-import pygame as pg
+from config import * 
 import numpy as np
-from pygame.locals import *
+#from pygame.locals import *
+
+#Game imports
 from generator import make_a_chunk
 
-#Globall stuff
-
-WINDOW = (1920, 1080)
-SURFACE = (480, 270)
-
-SCALE_RATIO = int(WINDOW[0] / SURFACE[0])
-
-
-game_surface = pg.Surface(SURFACE)
-
-WIN = pg.display.set_mode((WINDOW), HWSURFACE | DOUBLEBUF | RESIZABLE)
-
-pg.display.set_caption("Mörköpeli")
-FPS = 60
-
-
-
-#load sprites
-GRASS = pg.transform.scale(pg.image.load('lib/tiles/grass.png'), (16,16)).convert()
-DIRT = pg.transform.scale(pg.image.load('lib/tiles/dirt.png'), (16,16)).convert()
-STONE = pg.transform.scale(pg.image.load('lib/tiles/stone.png'), (16,16)).convert()
-
-
-#BACK_GROUND = pg.transform.scale(pg.image.load('lib/bg.png'), (WINDOW[0] * 1.2, WINDOW[1] * 1.2)).convert()
-
-BG_1 = pg.image.load('lib/bg/L_1.png')
-BG_2 = pg.image.load('lib/bg/L_2.png')
-BG_3 = pg.image.load('lib/bg/L_3.png')
-BG_4 = pg.image.load('lib/bg/L_4.png')
-BG_5 = pg.image.load('lib/bg/L_5.png')
-
-BACK_GROUND = [BG_1, BG_2, BG_3, BG_4,BG_5]
-
-#Animations:
-PLAYER_RUN_R = [
-(pg.image.load('lib/player/run_R_1.png')),
-(pg.image.load('lib/player/run_R_2.png')),
-(pg.image.load('lib/player/run_R_3.png')),
-(pg.image.load('lib/player/run_R_4.png')),
-(pg.image.load('lib/player/run_R_5.png')),
-(pg.image.load('lib/player/run_R_6.png')),
-(pg.image.load('lib/player/run_R_7.png')),
-(pg.image.load('lib/player/run_R_8.png')),
-(pg.image.load('lib/player/run_R_9.png'))
-]
-
-
-PLAYER_RUN_L = [
-(pg.image.load('lib/player/run_L_1.png')),
-(pg.image.load('lib/player/run_L_2.png')),
-(pg.image.load('lib/player/run_L_3.png')),
-(pg.image.load('lib/player/run_L_4.png')),
-(pg.image.load('lib/player/run_L_5.png')),
-(pg.image.load('lib/player/run_L_6.png')),
-(pg.image.load('lib/player/run_L_7.png')),
-(pg.image.load('lib/player/run_L_8.png')),
-(pg.image.load('lib/player/run_L_9.png'))
-]
-
-
-#Config
-TILE_SIZE = 16
-CHUNK_SIZE = 16
-G_CONST = 32
-RENDER_DISTANCE = 5
-
-#Paths
-WORLD_DIR = 'world'
 
 #scroll on x and y axies
 scroll = [0,0]
 
+#Chunks memory
 loaded_chunks = {}
      
 
@@ -179,11 +114,11 @@ class player(object):
         self.sprites_run_left = PLAYER_RUN_L
         self.sprites_run_right = PLAYER_RUN_R
         self.speed = speed
-        self.scale = (32, 36)
+        self.scale = (24, 24)
         self.vel = 0
         self.air_time = 0
         self.is_jumping = True
-        self.rect = pg.Rect(-10, 0, 20, 33)
+        self.rect = self.sprites_run_left[3].get_rect()
         self.facing = True
         self.run_count = 1
 
@@ -192,16 +127,16 @@ class player(object):
         keys = pg.key.get_pressed()
         if keys[ord('r')]:
             pos = pg.mouse.get_pos()
-            pos_real = (pos[0] / SCALE_RATIO, pos[1] / SCALE_RATIO)
+            pos_real = (pos[0] / SCALE_RATIO), (pos[1] / SCALE_RATIO)
 
-            remove_pos = int(pos_real[0] / TILE_SIZE + scroll[0] / TILE_SIZE), int(pos_real[1] / TILE_SIZE + scroll[1] / TILE_SIZE)
+            remove_pos = int((pos_real[0] + scroll[0] ) / TILE_SIZE), int((pos_real[1] + scroll[1] ) / TILE_SIZE)
             chunk.remove_block(remove_pos)
             return
 
         if keys[ord('f')]:
             pos = pg.mouse.get_pos()
             pos_real = (pos[0] / SCALE_RATIO, pos[1] / SCALE_RATIO)
-            place_pos = int(pos_real[0] / TILE_SIZE + scroll[0] / TILE_SIZE), int(pos_real[1] / TILE_SIZE + scroll[1] / TILE_SIZE)
+            place_pos = int((pos_real[0] + scroll[0] ) / TILE_SIZE), int((pos_real[1] + scroll[1] ) / TILE_SIZE)
             chunk.add_block(place_pos)
             return
 
@@ -235,9 +170,8 @@ class player(object):
         if keys[pg.K_SPACE]:
             if self.is_jumping == False:
                 self.is_jumping = True
-                self.vel += 12
+                self.vel += 8
 
-###########################################################################################
 
         y_move = self.vel- G_CONST * self.air_time
 
@@ -419,8 +353,8 @@ def events(player):
 
 
     
-    scroll[0] += (player.rect.x - scroll[0] - (SURFACE[0] / 2 - player.scale[0] / 2)) / 4
-    scroll[1] += (player.rect.y - scroll[1] - (SURFACE[1] / 2 - player.scale[1] / 2)) / 4
+    scroll[0] += (player.rect.x - scroll[0] - (SURFACE[0] // 2 - player.scale[0] // 2)) // 4
+    scroll[1] += (player.rect.y - scroll[1] - (SURFACE[1] // 2 - player.scale[1] // 2)) // 4
 
     
 
@@ -433,7 +367,7 @@ def events(player):
 def main():
    
     #player object
-    player_1 = player(speed = 3)
+    player_1 = player(speed = 2)
     
     #chunk object
     #chunk_0 = chunk(data=read_chunk(chunk_id=0), index=0)
@@ -442,7 +376,7 @@ def main():
     clock = pg.time.Clock()
     run = True
     while run:
-        #clock.tick(FPS)
+        clock.tick(FPS)
         for event in pg.event.get():
             #closing window
             if event.type == pg.QUIT:
@@ -452,8 +386,8 @@ def main():
         events(player_1)
 
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     print("Starting game...")
     main()
 

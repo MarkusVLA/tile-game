@@ -1,3 +1,4 @@
+
 from random import randint
 import noise
 import numpy as np
@@ -9,7 +10,7 @@ STONE = 3
 SEED = randint(0, 10000)
 
 CHUNK_SIZE = 16
-TILE_SIZE = 16
+TILE_SIZE = 8
 TERRAIN_HEIGHT = 16
 
 WORLD_DEPTH = 128
@@ -29,7 +30,7 @@ def make_terrain(id):
         chunk[(x, int(real_height))] = GRASS
 
         #Stone layer:
-        stone_H = noise.pnoise1((x) / CHUNK_SIZE + id, repeat = 1000000, octaves = 10)
+        stone_H = noise.pnoise1((x) / CHUNK_SIZE + id, repeat = 1000000, octaves = 4)
         real_stone_H = (stone_H * 16) + TERRAIN_HEIGHT + 16
 
         random = randint(0,3)
