@@ -6,10 +6,20 @@ from pygame.locals import *
 from generator import make_a_chunk
 
 #Globall stuff
-WINDOW = (600, 600)
+
+WINDOW = (1920, 1080)
+SURFACE = (480, 270)
+
+SCALE_RATIO = int(WINDOW[0] / SURFACE[0])
+
+
+game_surface = pg.Surface(SURFACE)
+
 WIN = pg.display.set_mode((WINDOW), HWSURFACE | DOUBLEBUF | RESIZABLE)
+
 pg.display.set_caption("Mörköpeli")
 FPS = 60
+
 
 
 #load sprites
@@ -20,11 +30,11 @@ STONE = pg.transform.scale(pg.image.load('lib/tiles/stone.png'), (16,16)).conver
 
 #BACK_GROUND = pg.transform.scale(pg.image.load('lib/bg.png'), (WINDOW[0] * 1.2, WINDOW[1] * 1.2)).convert()
 
-BG_1 = pg.transform.scale(pg.image.load('lib/bg/L_1.png'), (WINDOW[0] * 1.2, WINDOW[1] * 1.2))
-BG_2 = pg.transform.scale(pg.image.load('lib/bg/L_2.png'), (WINDOW[0] * 1.2, WINDOW[1] * 1.2))
-BG_3 = pg.transform.scale(pg.image.load('lib/bg/L_3.png'), (WINDOW[0] * 1.2, WINDOW[1] * 1.2))
-BG_4 = pg.transform.scale(pg.image.load('lib/bg/L_4.png'), (WINDOW[0] * 1.2, WINDOW[1] * 1.2))
-BG_5 = pg.transform.scale(pg.image.load('lib/bg/L_5.png'), (WINDOW[0] * 1.2, WINDOW[1] * 1.2)).convert()
+BG_1 = pg.image.load('lib/bg/L_1.png')
+BG_2 = pg.image.load('lib/bg/L_2.png')
+BG_3 = pg.image.load('lib/bg/L_3.png')
+BG_4 = pg.image.load('lib/bg/L_4.png')
+BG_5 = pg.image.load('lib/bg/L_5.png')
 
 BACK_GROUND = [BG_1, BG_2, BG_3, BG_4,BG_5]
 
@@ -111,8 +121,10 @@ class chunk(object):
 
     def remove_block(self, pos):
         block_to_break = self.blocks.get((pos))
+        print(block_to_break)
         if block_to_break != None:
             self.blocks.pop(pos)
+            
     
     def add_block(self, pos):
         #check if a block exists
@@ -154,7 +166,7 @@ class Block(object):
         
 
     def render(self):
-        WIN.blit(self.sprite, (self.rect.x - scroll[0], self.rect.y - scroll[1]))
+        game_surface.blit(self.sprite, (self.rect.x - scroll[0], self.rect.y - scroll[1]))
 
 
 
@@ -180,13 +192,16 @@ class player(object):
         keys = pg.key.get_pressed()
         if keys[ord('r')]:
             pos = pg.mouse.get_pos()
-            remove_pos = int((pos[0]) // TILE_SIZE + scroll[0] / TILE_SIZE), int(pos[1] / TILE_SIZE + scroll[1] / TILE_SIZE)
+            pos_real = (pos[0] / SCALE_RATIO, pos[1] / SCALE_RATIO)
+
+            remove_pos = int(pos_real[0] / TILE_SIZE + scroll[0] / TILE_SIZE), int(pos_real[1] / TILE_SIZE + scroll[1] / TILE_SIZE)
             chunk.remove_block(remove_pos)
             return
 
         if keys[ord('f')]:
             pos = pg.mouse.get_pos()
-            place_pos = int(pos[0] // TILE_SIZE + scroll[0] / TILE_SIZE), int(pos[1] / TILE_SIZE + scroll[1] / TILE_SIZE)
+            pos_real = (pos[0] / SCALE_RATIO, pos[1] / SCALE_RATIO)
+            place_pos = int(pos_real[0] / TILE_SIZE + scroll[0] / TILE_SIZE), int(pos_real[1] / TILE_SIZE + scroll[1] / TILE_SIZE)
             chunk.add_block(place_pos)
             return
 
@@ -225,6 +240,8 @@ class player(object):
 ###########################################################################################
 
         y_move = self.vel- G_CONST * self.air_time
+
+        #Max falling speed
         if y_move > -16:
 
             move_vector[1] -= y_move
@@ -253,14 +270,14 @@ class player(object):
             self.vel = 0
 
 
-
+    
     def render(self):
         
         if self.facing == False:
-            WIN.blit(PLAYER_RUN_L[self.run_count // 4], (self.rect.x - scroll[0] , self.rect.y - scroll[1] ))
+            game_surface.blit(PLAYER_RUN_L[self.run_count // 4], (self.rect.x - scroll[0] , self.rect.y - scroll[1] ))
 
         if self.facing == True:
-            WIN.blit(PLAYER_RUN_R[self.run_count // 4], (self.rect.x - scroll[0] , self.rect.y - scroll[1] ))
+            game_surface.blit(PLAYER_RUN_R[self.run_count // 4], (self.rect.x - scroll[0] , self.rect.y - scroll[1] ))
 
 
 ###########################################################################################
@@ -344,11 +361,11 @@ def unload_chunks(in_chunk):
 ###############################################################################################
     
 def render_background():
-    WIN.blit(BACK_GROUND[4], (-100 - scroll[0] / 50, -50 - scroll[1] / 50))
-    #WIN.blit(BACK_GROUND[3], (-100 - scroll[0] / 40, -50 - scroll[1] / 40))
-    WIN.blit(BACK_GROUND[2], (-100 - scroll[0] / 30, -50 - scroll[1] / 30))
-    #WIN.blit(BACK_GROUND[1], (-100 - scroll[0] / 20, -50 - scroll[1] / 20))
-    #WIN.blit(BACK_GROUND[0], (-100 - scroll[0] / 10, -50 - scroll[1] / 10))
+    game_surface.blit(BACK_GROUND[4], (-60 - scroll[0] / 50, -20 - scroll[1] / 60))
+    game_surface.blit(BACK_GROUND[3], (-60 - scroll[0] / 55, -20 - scroll[1] / 55))
+    game_surface.blit(BACK_GROUND[2], (-60 - scroll[0] / 50, -20 - scroll[1] / 50))
+    game_surface.blit(BACK_GROUND[1], (-60 - scroll[0] / 45, -20 - scroll[1] / 45))
+    game_surface.blit(BACK_GROUND[0], (-60 - scroll[0] / 40, -20 - scroll[1] / 40))
 
 def render_walls():
     pass
@@ -372,13 +389,15 @@ def events(player):
 
     
     
-    in_chunk = int((player.rect.x // TILE_SIZE) // CHUNK_SIZE)
+    in_chunk = int((player.rect.x / TILE_SIZE) / CHUNK_SIZE)
     mouse_pos = pg.mouse.get_pos()
+
+    mouse_pos_real = (mouse_pos[0] / SCALE_RATIO, mouse_pos[1] / SCALE_RATIO)
     
-    mouse_in_chunk = int(((mouse_pos[0] + scroll[0]) // TILE_SIZE) // CHUNK_SIZE)
-
-
-
+    mouse_in_chunk = int(((mouse_pos_real[0] + scroll[0]) / TILE_SIZE) // CHUNK_SIZE)
+    #print('player:{}, mouse:{}'.format(in_chunk, mouse_in_chunk))
+ 
+    
     #update global chunk data
     load_chunks(in_chunk)
     unload_chunks(in_chunk)
@@ -400,10 +419,13 @@ def events(player):
 
 
     
-    scroll[0] += (player.rect.x - scroll[0] - (WINDOW[0] / 2 - player.scale[0] / 2)) / 16
-    scroll[1] += (player.rect.y - scroll[1] - (WINDOW[1] / 2 - player.scale[1] / 2)) / 16
+    scroll[0] += (player.rect.x - scroll[0] - (SURFACE[0] / 2 - player.scale[0] / 2)) / 4
+    scroll[1] += (player.rect.y - scroll[1] - (SURFACE[1] / 2 - player.scale[1] / 2)) / 4
 
     
+
+    scaled = pg.transform.scale(game_surface, WINDOW)
+    WIN.blit(scaled, (0,0))
     pg.display.update()
 
 
@@ -420,7 +442,7 @@ def main():
     clock = pg.time.Clock()
     run = True
     while run:
-        clock.tick(FPS)
+        #clock.tick(FPS)
         for event in pg.event.get():
             #closing window
             if event.type == pg.QUIT:
